@@ -1,0 +1,165 @@
+# MODEL OF VTA DA NEURON, (Stetsenko & Koos, 2023)
+#Simulates 2 consequitive, 5s long trials with CS at 1s, 6s,  and reward/prediction at 3s, 8s.  Sochastic GABAergic synaptic inputs and continuous NMDA EPSPs are read from 2 data files;  
+# NMDA EPSP peak is ste to 0 to simulate omission of reward. Data files included in publication.
+# Units: time [ms], potential [mV], current [nA], surface area [cm^2], conductance density [microS/cm^2], concentrations and affinities [mM], capacitance [nF], kinetic rate constants: first order [1/ms], second order [1/(ms*mM). Pump current is defined as electrical current, IPump_max is in [nA/ms]
+
+
+#Simulation parameters
+params F=96485.3321
+params Naf_g=5000, Kn_g=2400, Ca_g=2, Girk_g=18, INaL_g=2.36, SK_g=3
+params gbarNMDA=0,  gbarNMDAc=310, Mg=0.5, me=0.08, eNMDA=0, NMDA_Ca_p=0.0027
+params idel=3025, idur=3000
+params BT=0.1
+params k1=100, k2=0.1 #1/(mM*ms) and 1/ms         
+params pump_Kd=0.0003
+params IPump_max=46 
+params sk_Kd=0.00017
+params SK_tau=7
+params area=0.00015708
+params volume=1
+params cc=1000
+params IStim=0
+params Ip=1
+params Ip2=64
+params ipf=-1
+params ipf2=-1
+params tOn=500
+params tOff=3000
+params slow_cont=1
+params dis_tau=140
+params pulse=0
+params Ih_g=60
+params Ka_g=40
+params tdur=600
+params T2_w = 1.25
+params T3_w = 0.71
+params tabs_scale_NMDA=1
+
+# Initial conditions
+init NAFM=0.11
+init nafh=0.51
+init NAFh2=0.42
+init S=0.99
+init B=0.14
+init KN=0.1
+init KAM=0.42
+init kah=0.8
+init IH=0.04
+init cam=0.25
+init V=-49
+init Ca=0.00011
+
+# Input data
+table gT2 T2_input.dat 
+table gT3 T3_input.dat
+table dataNMDA NMDA_input.dat
+
+
+# Current equation
+dV/dt=(1/(cc))*(-(INaf+IKn+ISK+ICa+IGirk+INaL+IIh+Ika+INMDA) +i_pulse(t)/area   + Istim/area -i(t)  )
+
+
+# Ca2+ dyanamics                
+dCa/dt=(-ICa-NMDA_Ca_p*INMDA_ca-IPump)/(2*F*volume)-BT*(k1*Ca*(1-B)-k2*B)
+dB/dt=k1*Ca*(1-B)-k2*B
+Ipump=IPump_max/(1+(pump_Kd)/Ca)
+
+
+# Fast Na channel: Naf
+Nafm_tau=0.01 + 1/(Nafm_a + Nafm_b)
+Nafm_a=(15.295+0.32217*v)/(1+21.793*exp(-(v+55.35)/7.1686))
+
+Nafm_b=3.0212*exp(-7.4630 * 0.001*v)
+Nafm_inf=1/(1+exp(-(v+30.0907)/9.7264))
+
+Nafh_tau=0.4 + 1/(Nafh_a + Nafh_b) 
+Nafh_a = 5.0754 * 0.0001*exp(-6.3213 * 0.01*v)
+Nafh_b = 9.7529*exp(0.13442*v) 
+Nafh_inf=1/(1+exp(-(v+54.0289)/(-10.7665)))
+
+Nafh_tau2=0.4 + 1/(Nafh_a2 + Nafh_b2)
+Nafh_a2 = 1.3134 * 0.01*exp(8.5636 * 0.0001*v)
+Nafh_b2 = 13.165*exp(0.14556*v)
+Nafh_inf2=1/(1+exp(-(v+54.0289)/(-10.7665)))
+
+dNafm/dt=(Nafm_inf-Nafm)/(Nafm_tau)
+dNafh/dt=(Nafh_inf-Nafh)/(Nafh_tau)
+dNafh2/dt=(Nafh_inf2-Nafh2)/Nafh_tau2
+INaf=Naf_g*Nafm^3*(Nafh+slow_cont*Nafh2)*(v-60)
+
+
+# SK
+s_inf=1/(1+(ca/sk_Kd)^(-4))
+
+ds/dt=(s_inf-s)/SK_tau
+Isk=SK_g*s*(V+90)
+
+
+# Fast Kv channel 
+Kn_inf=1/(1+exp(-(v+25)/12))
+Kn_tau=if(v > (-59))then(1 + 1*exp(-(ln(1 + 0.05*(v + 40))/0.05)^2/300))else(1)
+
+dKn/dt=(Kn_inf-Kn)/Kn_tau
+IKn=Kn_g*Kn^3*(v+85)
+
+
+# A-current
+Kam_inf=(exp((v+29.4172)/(8.43839)))^(0.333333333)
+Kam_tau=(2*exp(-(V+50)*(V+50)/550)+1.1)
+Kah_inf=exp((v+61.1714)/(-4.57317))
+Kah_tau=200
+
+dKam/dt=(Kam_inf-Kam)/Kam_tau
+dKah/dt=(Kah_inf-Kah)/Kah_tau
+IKa=Ka_g*Kam^3*Kah*(v+85)
+
+
+# Low threshold Ca2+ channel
+Cam_tau=0.01 + 1/(Cam_a + Cam_b)
+Cam_a = 0.020876*(v+39.726)/(exp((v + 39.726)/4.711)-1)
+Cam_b = 0.19444*exp(-(v + 15.338)/224.21)
+Cam_inf = 1/(1+exp(-(v+40)/10))
+
+dCam/dt=(Cam_inf-Cam)/Cam_tau
+ICa=Ca_g*Cam*Nafh*(v-60)
+
+
+# Ih
+Ih_a   = (0.00002)*exp((v)/(-10.2))
+Ih_b   = 7.6/(1+exp((v-10)/(-100)))
+Ih_tau = 1000/(Ih_a+Ih_b)
+Ih_inf = (1/(1+exp((v+80)/6.5)))
+
+dIh/dt = (Ih_inf-Ih)/Ih_tau
+IIh=Ih_g*Ih*(v+35)
+
+
+# GIRK
+IGirk = Girk_g*(v + 85)/(1 + exp((v + 45)/20))
+
+
+# Na+ leak
+INaL=INaL_g*(v-60)
+
+
+# GABAergic synaptic inputs 
+i(t)=(v+75)*(T2_w*gT2(t) +T3_w*gT3(t))
+
+
+# NMDA receptor activation
+tnmda=dataNMDA(t)
+gnmda(v)=(tnmda*gbarNMDA+gbarNMDAc)/(1+0.28*Mg*exp(-me*v))
+INMDA=gnmda(v)*(v)
+
+# NMDA Ca2+ current
+INMDA_ca=gnmda(v)*(v-60)
+
+
+# test current pulse           
+i_pulse(t)=Heav(t-ton)*Heav(toff-t)*pulse                                                                                                                         
+
+#Display settings
+@ DT=0.0005 , METH={gear, 0.01, 1e-12, 1}, xlo=0, xhi=15000, ylo=-100, yhi=50
+@ xplot=t, yplot=v
+set pp {xp=t,yp=v,xlo=0.xhi=2,ylo=-100,yhi=100}
+done
