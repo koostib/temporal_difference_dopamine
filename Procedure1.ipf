@@ -3,14 +3,14 @@
 #include <Function Grapher>
 #include "Macintosh HD:Users:jaime:Library:Preferences:WaveMetrics:Igor Pro 6 Intel:Packages:WMFunctionGrapher:MyFunc"
 
-// NOTES TO USER
+// NOTES TO USERS
 // Initialize with running 'doit()' after loading the procedure 
-// To run simulation of cell responses to V(t) square inputs of oncreasing amplitude execute 'doit()'.  Output is the 'out' array (see bellow) for cell activities etc..  
-// The weighted sum continuous  output tis in the 'da_w_1_n' waves where n is the trial number. 
+// To run simulation of cell responses to V(t) square inputs of oncreasing amplitude execute 'doit()'.  Output is the 'out' array (see below) for cell activities etc..  
+// The weighted sum continuous  output is in the 'da_w_1_n' waves where n is the trial number. 
 // V(t) inputs  are generated in  'doit()'  as the the wave 'input2';  the code is set up to generate square input pulses 
 // To generate the stochastic synaptic  output to DA neurons execute 'discr(n)'  where the input variable n determines the number of trials. 
-// The waves 't4_n' and 't5_n' are the stochastic synaptic outputwaves, where n is the serial number of the trial 
-// Multiple trials are concatenated in waves 'wdest1' and 'wdest2' and when prompted by the save popup window, save  as't4.dat' and 't5.dat'.  The created files are text files with appropriate header and format for use as is in XPPAUT 
+// The waves 't4_n' and 't5_n' are the stochastic synaptic output waves, where n is the serial number of the trial 
+// Multiple trials are concatenated in waves 'wdest1' and 'wdest2' and when prompted by the same popup window, save  as't4.dat' and 't5.dat'.  The created files are text files with appropriate header and format for use as is in XPPAUT 
 // Notes for function 'myint()'	
 	//Most variables are  defined in the function 'doit()'
 	// 'yw' array contains the variable values updated at each step
@@ -20,7 +20,8 @@
 	// Variable 2 is the synaptic efficacy of the facilitating synapse 
 	// Variable 3-5 are the GABAB    simulation variables
 	// Variable 6 is the synaptic effciacy of the depressing synapse
-	// Initial values are commentized bellow; These  need to be decomentized when the first trial is run, after that the steady state end of each trial  can be used to initialize the run, if the same lines are commentized.
+	// Initial values are commented out below; These  need to be uncommented when the first trial is run, 
+	// after that the steady state end of each trial  can be used to initialize the run, if the same lines are commented.
 
 
 // Function to integrate the ODEs using the forward Euler method describing the cells' responses to different inputs. dt is variable step_size [s] and is set in function 'doit()' (0.1 or 1 ms was used for cell responses; 1ms for stochastic)
