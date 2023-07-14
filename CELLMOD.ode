@@ -1,12 +1,12 @@
 # MODEL OF VTA DA NEURON, (Stetsenko & Koos, 2023)
-#Simulates 2 consequitive, 5s long trials with CS at 1s, 6s,  and reward/prediction at 3s, 8s.  Sochastic GABAergic synaptic inputs and continuous NMDA EPSPs are read from 2 data files;  
-# NMDA EPSP peak is ste to 0 to simulate omission of reward. Data files included in publication.
+#Simulates 2 consequitive, 5s long trials with CS at 1s, 6s,  and reward/prediction at 3s, 8s.  Stochastic GABAergic synaptic inputs and continuous NMDA EPSPs are read from 2 data files;  
+# NMDA EPSP peak is ste to 0 to simulate omission of reward. Data files are included in the publication.
 # Units: time [ms], potential [mV], current [nA], surface area [cm^2], conductance density [microS/cm^2], concentrations and affinities [mM], capacitance [nF], kinetic rate constants: first order [1/ms], second order [1/(ms*mM). Pump current is defined as electrical current, IPump_max is in [nA/ms]
 
 
 #Simulation parameters
 params F=96485.3321
-params Naf_g=5000, Kn_g=2400, Ca_g=2, Girk_g=18, INaL_g=2.36, SK_g=3
+params Naf_g=5000, Kn_g=2400, Ca_g=2, Girk_g=18, INaL_g=2.36, SK_g=3 # Ion channel conductuncies
 params gbarNMDA=0,  gbarNMDAc=310, Mg=0.5, me=0.08, eNMDA=0, NMDA_Ca_p=0.0027
 params idel=3025, idur=3000
 params BT=0.1
