@@ -3,14 +3,14 @@
 #include <Function Grapher>
 #include "Macintosh HD:Users:jaime:Library:Preferences:WaveMetrics:Igor Pro 6 Intel:Packages:WMFunctionGrapher:MyFunc"
 
-// NOTES TO USERS
-// Initialize with running 'doit()' after loading the procedure 
-// To run simulation of cell responses to V(t) square inputs of oncreasing amplitude execute 'doit()'.  Output is the 'out' array (see below) for cell activities etc..  
-// The weighted sum continuous  output is in the 'da_w_1_n' waves where n is the trial number. 
+// NOTES TO USER
+// Initialize with running 'doit()' after loading the procedure .  Code is for forward Euler method with 0.001s time steps
+// To run simulation of cell responses to V(t) square inputs of increasing amplitude execute 'doit()'.  Output is the 'out' array (see bellow) for cell activities etc..  
+// The weighted sum continuous  output tis in the 'da_w_1_n' waves where n is the trial number. 
 // V(t) inputs  are generated in  'doit()'  as the the wave 'input2';  the code is set up to generate square input pulses 
 // To generate the stochastic synaptic  output to DA neurons execute 'discr(n)'  where the input variable n determines the number of trials. 
-// The waves 't4_n' and 't5_n' are the stochastic synaptic output waves, where n is the serial number of the trial 
-// Multiple trials are concatenated in waves 'wdest1' and 'wdest2' and when prompted by the same popup window, save  as't4.dat' and 't5.dat'.  The created files are text files with appropriate header and format for use as is in XPPAUT 
+// The waves 't4_n' and 't5_n' are the stochastic synaptic outputwaves, where n is the serial number of the trial 
+// Multiple trials are concatenated in waves 'wdest1' and 'wdest2' and when prompted by the save popup window, save  as't4.dat' and 't5.dat'.  The created files are text files with appropriate header and format for use as is in XPPAUT 
 // Notes for function 'myint()'	
 	//Most variables are  defined in the function 'doit()'
 	// 'yw' array contains the variable values updated at each step
@@ -20,8 +20,7 @@
 	// Variable 2 is the synaptic efficacy of the facilitating synapse 
 	// Variable 3-5 are the GABAB    simulation variables
 	// Variable 6 is the synaptic effciacy of the depressing synapse
-	// Initial values are commented out below; These  need to be uncommented when the first trial is run, 
-	// after that the steady state end of each trial  can be used to initialize the run, if the same lines are commented.
+	// Initial values are commentized bellow; These  need to be decomentized when the first trial is run, after that the steady state end of each trial  can be used to initialize the run, if the same lines are commentized.
 
 
 // Function to integrate the ODEs using the forward Euler method describing the cells' responses to different inputs. dt is variable step_size [s] and is set in function 'doit()' (0.1 or 1 ms was used for cell responses; 1ms for stochastic)
@@ -62,7 +61,8 @@ GABA_CArry=GABAB
 out=0
 sg=-1
 yw[6]=1-0.885
-// Initial conditions 
+
+// Initial conditions; uncomment for first run
 // yw[0]=0.557089
 // yw[1]=0.72455
 // yw[2]=0.163351
@@ -70,7 +70,8 @@ yw[6]=1-0.885
 // yw[4]=0.0359301
 // yw[5]=0.016038
 // yw[6]=0.5// 0.490815
-//  yw[7]=0.238189
+// yw[7]=0.238189
+
 For (i=0; i<(numpnts(GABAB)); i+=1)
 
 	dydx[0] =(step_size)*(1000/pw[0])*(1.2*pw[2] -yw[0]- 1*(GABA_CArry))   
@@ -188,7 +189,6 @@ wave IPSPs, da_w_1_18, IPSP_single, out, IPSPs2, t4, spk_INT, spk, st
 Make /O/N=(5/step_size) $wns
 Make /O/N=(15/step_size) IPSPs, IPSPs2, IPSP_single
 
-//Duplicate /O da_w_1_18, IPSPs, IPSPs2, IPSP_single
 IPSPs=0
 IPSPs2=0
 IPSP_single=0
@@ -198,9 +198,7 @@ doit()
 wave w = $wns
  
 For (i=0; i<(length/step_size); i+=1)
-
-IPSP_single[i]=-(exp(-i/1.5) - exp(-i/15))* 2.01
-
+	IPSP_single[i]=-(exp(-i/1.5) - exp(-i/15))* 2.01
 EndFor
 
 Make /O/N=1000 st
@@ -231,10 +229,9 @@ For (i=0; i<(length/step_size); i+=1)
 EndFor
 
 for (i=1; i<sp_count; i+=1)
-if ((st[i]-st[i-1])<4)
-st[i]=st[i]+4
-
-endif
+	if ((st[i]-st[i-1])<4)
+		st[i]=st[i]+4
+	endif
 endfor
 
 sp_count=0
@@ -256,21 +253,10 @@ For (i=interval_rand; i<(length/step_size); i+=1)
 		EndFor //b 		
 		cont_syn=	count
 		For (j=i;j<(length/step_size); j+=1)
-				if ((j-i)<0 ) 
-				print "here", j, i
-				else
-			//	print "ok"
-				EndIf
-
 			if (((j)>=0) && ((j) < (i+250)) )
 				IPSPs[j]+=IPSP_single[j-i]*(n_released)
 			EndIf
-		EndFOr //j
-
-
-
-
-
+		EndFor //j
 	endif
 	cont_syn+=step_size*k_S_recovery*(60-cont_syn)
 EndFor
@@ -293,7 +279,6 @@ NVAR k_S_recovery
 wave IPSPs, da_w_1_22, IPSP_single, out, IPSPs2, t4, spk_INT, spk, st
 Make /O/N=5000 $wns
 Make /O/N=(15/step_size) IPSPs, IPSPs2, IPSP_single
-//Duplicate /O da_w_1_22, IPSPs, IPSPs2, IPSP_single
 IPSPs=0
 IPSPs2=0
 IPSP_single=0
@@ -302,9 +287,7 @@ Sim_sel=6
 doit()
 wave w = $wns
 For (i=0; i<(length/step_size); i+=1)
-
-IPSP_single[i]=-(exp(-i/1.5) - exp(-i/15))*2.01
-
+	IPSP_single[i]=-(exp(-i/1.5) - exp(-i/15))*2.01
 EndFor
 
 Make /O/N=1000 st
@@ -353,8 +336,8 @@ For (i=interval_rand; i<(length/step_size); i+=1)
 		for (b=0; b<round(cont_syn); b+=1)
 			if ((enoise(0.5)+0.5) < (0.5))
 				if (count>=1)
-				count-=1
-				n_released+=1
+					count-=1
+					n_released+=1
 				EndIf
 			EndIf
 		EndFor //b 		
@@ -363,22 +346,16 @@ For (i=interval_rand; i<(length/step_size); i+=1)
 			if (((j)>=i) && ((j) < (i+250)) )
 				IPSPs[j]+=IPSP_single[j-i]*(n_released)
 			EndIf
-		EndFOr //j
-
-
-
+		EndFor //j
 	endif
 	cont_syn+=step_size*200*k_S_recovery*(5-cont_syn)
-//print cont_syn
 EndFor
- EndFor
+EndFor
 t4=0
 For (i=0; i<5000; i+=1)
 w[i]=IPSPs[i+7000]
 EndFor
 End
-
-
 
 
 
@@ -462,7 +439,7 @@ variable /G k_G_activate=30/4
 variable /G k_G_deactivate=48/4
 variable /G k_R_desense=42/4
 variable /G Kd_GABAb=(5e-2)^n_sites
-variable /G step_size=0.001 // [s],   use 0.001 for stochastic simulations 
+variable /G step_size=0.001 // [s]
 variable /G  k_S_deplete=3.75
 variable /G  k_S_recovery=0.65
 variable /G release_p=1-e^(-k_S_deplete*0.6581/15)
